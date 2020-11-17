@@ -1,0 +1,34 @@
+﻿[
+  {
+    "Name": "თეთრი",
+    "Description": "თესლი თეთრი ღვინო, პახმელია არ იცის ძმაო მაგარია.",
+    "Price": 12,
+    "PictureUrl": "images/wines/wine1.jpg",
+    "WineTypeId": 1,
+    "WineYearId": 1
+  },
+  {
+    "Name": "შავი",
+    "Description": "იაფია, ნაშას დაუთრიე მოგცემს.",
+    "Price": 8,
+    "PictureUrl": "images/wines/wine2.jpg",
+    "WineTypeId": 2,
+    "WineYearId": 1
+  },
+  {
+    "Name": "კუსკუსა",
+    "Description": "გამჭირვალე ფერისაა ტიპებს დააგოიმებ რო ძვირიანია.",
+    "Price": 10,
+    "PictureUrl": "images/wines/wine3.jpg",
+    "WineTypeId": 3,
+    "WineYearId": 1
+  },
+  {
+    "Name": "ჭაჭა",
+    "Description": "ლიჟბი რამე დააყოლე ჩაიტანს.",
+    "Price": 5,
+    "PictureUrl": "images/wines/wine3.jpg",
+    "WineTypeId": 4,
+    "WineYearId": 1
+  }
+]
