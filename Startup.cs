@@ -4,8 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using DatunashviliAPI.Data;
+using DatunashviliAPI.Errors;
+using DatunashviliAPI.Exstensions;
 using DatunashviliAPI.Helpers;
 using DatunashviliAPI.Interfaces;
+using DatunashviliAPI.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -37,19 +40,29 @@ namespace DatunashviliAPI
             services.AddDbContext<StoreContext>(x => x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             
-            services.AddScoped<IProductRepository, ProductRepository>();
-            services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>)));
-
             services.AddAutoMapper(typeof(MappingProfiles));
+
+            services.AddApplicationServices();
+
+            //add swagger
+            services.AddSwaggerDocumentation();
+        
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            /*
+             *  use ExceptionMiddleware instead
+               if (env.IsDevelopment())
+              {
+                  app.UseDeveloperExceptionPage();
+              }
+             */
+
+            app.UseMiddleware<ExceptionMiddleware>();
+
+            app.UseStatusCodePagesWithReExecute("/errors/{0}");
 
             app.UseHttpsRedirection();
 
@@ -58,6 +71,8 @@ namespace DatunashviliAPI
             app.UseStaticFiles();
 
             app.UseAuthorization();
+
+            app.UseSwaggerDocumentation();
 
             app.UseEndpoints(endpoints =>
             {

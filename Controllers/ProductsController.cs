@@ -6,6 +6,7 @@ using AutoMapper;
 using DatunashviliAPI.Data;
 using DatunashviliAPI.Dtos;
 using DatunashviliAPI.Entities;
+using DatunashviliAPI.Errors;
 using DatunashviliAPI.Interfaces;
 using DatunashviliAPI.Specifications;
 using Microsoft.AspNetCore.Http;
@@ -14,9 +15,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DatunashviliAPI.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ProductsController : ControllerBase
+    public class ProductsController : BaseApiController
     {
         private readonly IGenericRepository<Product> productsRepo;
         private readonly IGenericRepository<WineType> wineTypeRepo;
@@ -59,11 +58,14 @@ namespace DatunashviliAPI.Controllers
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
         {
             var spec = new ProductsWithTypesAndBrandsSpecification(id);
 
             var product = await productsRepo.GetEntityWithSpec(spec);
+            if (product == null) return NotFound(new ApiResponse(404));
 
             /*
              return new ProductToReturnDto
@@ -77,6 +79,8 @@ namespace DatunashviliAPI.Controllers
                 WineYear = product.WineYear.Name
             };
             */
+
+
 
             return mapper.Map<Product, ProductToReturnDto>(product);
         }
