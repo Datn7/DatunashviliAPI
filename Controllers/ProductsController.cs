@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using DatunashviliAPI.Data;
+using DatunashviliAPI.Dtos;
 using DatunashviliAPI.Entities;
 using DatunashviliAPI.Interfaces;
+using DatunashviliAPI.Specifications;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,41 +18,79 @@ namespace DatunashviliAPI.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly StoreContext context;
-        private readonly IProductRepository repository;
+        private readonly IGenericRepository<Product> productsRepo;
+        private readonly IGenericRepository<WineType> wineTypeRepo;
+        private readonly IGenericRepository<WineYear> wineYearRepo;
+        private readonly IMapper mapper;
 
-        public ProductsController(StoreContext context, IProductRepository repository)
+        public ProductsController(IGenericRepository<Product> productsRepo, IGenericRepository<WineType> wineTypeRepo, IGenericRepository<WineYear> wineYearRepo,
+            IMapper mapper)
         {
-            this.context = context;
-            this.repository = repository;
+            this.productsRepo = productsRepo;
+            this.wineTypeRepo = wineTypeRepo;
+            this.wineYearRepo = wineYearRepo;
+            this.mapper = mapper;
         }
 
-        /* რეპოზიტორის დახმარებით წაღება ინფორმაციის*/
+        /*Generic რეპოზიტორის დახმარებით წაღება ინფორმაციის*/
 
         [HttpGet]
-        public async Task<ActionResult<List<Product>>> GetProducts()
+        public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts()
         {
-            var products = await repository.GetProductsAsync();
+            var spec = new ProductsWithTypesAndBrandsSpecification();
 
-            return Ok(products);
+            var products = await productsRepo.ListAsync(spec);
+
+            /* mapping with automapper
+             * 
+              return products.Select(product => new ProductToReturnDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                PictureUrl = product.PictureUrl,
+                Price = product.Price,
+                WineType = product.WineType.Name,
+                WineYear = product.WineYear.Name
+            }).ToList();
+             */
+
+            return Ok(mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products));
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
         {
-            return await repository.GetProductByIdAsync(id);
+            var spec = new ProductsWithTypesAndBrandsSpecification(id);
+
+            var product = await productsRepo.GetEntityWithSpec(spec);
+
+            /*
+             return new ProductToReturnDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                PictureUrl = product.PictureUrl,
+                Price = product.Price,
+                WineType = product.WineType.Name,
+                WineYear = product.WineYear.Name
+            };
+            */
+
+            return mapper.Map<Product, ProductToReturnDto>(product);
         }
 
         [HttpGet("types")]
         public async Task<ActionResult<IReadOnlyList<WineType>>> GetProductType()
         {
-            return Ok(await repository.GetProductTypesAsync());
+            return Ok(await wineTypeRepo.ListAllAsync());
         }
 
         [HttpGet("years")]
         public async Task<ActionResult<IReadOnlyList<WineType>>> GetProductYears()
         {
-            return Ok(await repository.GetProductYearsAsync());
+            return Ok(await wineYearRepo.ListAllAsync());
         }
 
         /* 
