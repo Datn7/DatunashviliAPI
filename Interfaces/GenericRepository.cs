@@ -19,6 +19,11 @@ namespace DatunashviliAPI.Interfaces
             this.storeContext = storeContext;
         }
 
+        public async Task<int> CountAsync(ISpecification<T> spec)
+        {
+            return await APplySpecification(spec).CountAsync();
+        }
+
         public async Task<T> GetByIdAsync(int id)
         {
             return await storeContext.Set<T>().FindAsync(id);
